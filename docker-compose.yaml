@@ -1,0 +1,40 @@
+version: "3"
+services:
+  nginx_proxy:
+    container_name: grammar_checker_nginx_proxy_container
+    networks:
+      - grammar-checker-private
+      - grammar-checker-public
+    image: nginx:1.25.4-alpine
+    volumes:
+      - ./nginx_proxy_languagetool.conf:/etc/nginx/conf.d/default.conf
+    restart: always
+    ports:
+      - 8010:80
+
+  ##### Protected section
+
+  languagetool:
+    image: meyay/languagetool:6.3-1
+    container_name: grammar_checker_languagetool_container
+    networks:
+      - grammar-checker-private
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CAP_SETUID
+      - CAP_SETGID
+      - CAP_CHOWN
+    security_opt:
+      - no-new-privileges
+    ports:
+      # Using default port from the image
+      - 8010:8010
+    depends_on:
+      - nginx_proxy
+
+networks:
+  grammar-checker-public: {}
+  grammar-checker-private:
+    internal: true
