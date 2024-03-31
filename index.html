@@ -52,6 +52,33 @@
       let grammarResultEle;
       let templateTooltipEle;
 
+      function onReplaceBtnClicked(
+        textBase64Encoded = "",
+        offset = 0,
+        length = 0,
+        replaceTextBase64Encoded = ""
+      ) {
+        if (
+          textBase64Encoded.length <= offset ||
+          offset < 0 ||
+          textBase64Encoded.length <= offset + length ||
+          length < 0
+        )
+          return "";
+        const text = window.atob(textBase64Encoded);
+        const replaceText = window.atob(replaceTextBase64Encoded);
+        const replacedStr =
+          text.substring(0, offset) +
+          replaceText +
+          text.substring(offset + length, text.length);
+        console.log(replacedStr);
+
+        grammarTestInputEle.value = replacedStr;
+        textInputOnChange({ keyCode: 13 });
+        removeDisplayingTooltips();
+        return replacedStr;
+      }
+
       async function textInputOnChange(e) {
         if (e.keyCode !== 13) return;
         grammarResultEle.innerHTML = "...";
@@ -70,7 +97,7 @@
         if (
           !tooltipEle ||
           !Array.isArray(matches) ||
-          matches.length <= 0 ||
+          matches.length < 0 ||
           typeof text !== "string" ||
           text.length <= 0
         )
@@ -84,12 +111,21 @@
             match.offset + match.length
           );
           console.log(normalText, failText);
+          const possibleReplacements =
+            match.replacements.length > 0
+              ? match.replacements[0].value
+              : failText;
           resultHTMLString += `${normalText}
           <button
             style="color: #e685b5;"
             data-bs-toggle="tooltip"
-            data-bs-title="${match.message} <u><b>${match.replacements[0].value}</b></u>"
+            data-bs-title="${
+              match.message
+            } <u><b>${possibleReplacements}</b></u>"
             data-bs-html="true"
+            onclick="onReplaceBtnClicked('${window.btoa(text)}', ${
+            match.offset
+          }, ${match.length}, '${window.btoa(possibleReplacements)}')"
           >${failText}</button>
           `;
           lastStrPtr = match.offset + match.length;
@@ -99,6 +135,13 @@
         return resultHTMLString;
       }
 
+      function removeDisplayingTooltips() {
+        const tooltipDisplayingList =
+          document.querySelectorAll('[role="tooltip"]');
+        tooltipDisplayingList.forEach((tooltipDisplaying) => {
+          tooltipDisplaying.remove();
+        });
+      }
       function initTooltips() {
         const tooltipTriggerList = document.querySelectorAll(
           '[data-bs-toggle="tooltip"]'
