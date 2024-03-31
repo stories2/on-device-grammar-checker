@@ -26,15 +26,87 @@
   <body>
     <div class="container text-center h-100">
       <div class="row h-100 flex-column">
-        <div class="col mw-100">
-          <h1>Hell World</h1>
-        </div>
-        <div class="col mw-100">
-          <h1>Hell World</h1>
+        <form class="col mw-100 form-floating">
+          <textarea
+            class="form-control"
+            placeholder="Enter text"
+            id="grammarTestInput"
+            style="height: 100%; overflow-y: auto"
+          ></textarea>
+          <label for="grammarTestInput">Enter text</label>
+        </form>
+        <div class="col mw-100" style="padding: 5px; overflow-y: auto">
+          <span
+            style="color: #e685b5; display: none"
+            data-bs-toggle="tooltip"
+            data-bs-title="Default tooltip"
+            data-bs-html="true"
+            id="templateTooltip"
+          ></span>
+          <p class="muted text-start" id="grammarResult">...</p>
         </div>
       </div>
     </div>
     <script>
+      let grammarTestInputEle;
+      let grammarResultEle;
+      let templateTooltipEle;
+
+      async function textInputOnChange(e) {
+        if (e.keyCode !== 13) return;
+        grammarResultEle.innerHTML = "...";
+        const text = grammarTestInputEle.value;
+        console.log("text", text);
+        const { matches } = await grammarCheckReq(text);
+        grammarResultEle.innerHTML = renderGrammarCheckerResult(
+          templateTooltipEle,
+          text,
+          matches
+        );
+        initTooltips();
+      }
+
+      function renderGrammarCheckerResult(tooltipEle, text = "", matches = []) {
+        if (
+          !tooltipEle ||
+          !Array.isArray(matches) ||
+          matches.length <= 0 ||
+          typeof text !== "string" ||
+          text.length <= 0
+        )
+          return;
+        let resultHTMLString = "";
+        let lastStrPtr = 0;
+        matches.forEach((match) => {
+          const normalText = text.slice(lastStrPtr, match.offset);
+          const failText = text.slice(
+            match.offset,
+            match.offset + match.length
+          );
+          console.log(normalText, failText);
+          resultHTMLString += `${normalText}
+          <button
+            style="color: #e685b5;"
+            data-bs-toggle="tooltip"
+            data-bs-title="${match.message} <u><b>${match.replacements[0].value}</b></u>"
+            data-bs-html="true"
+          >${failText}</button>
+          `;
+          lastStrPtr = match.offset + match.length;
+        });
+        if (lastStrPtr < text.length)
+          resultHTMLString += text.slice(lastStrPtr, text.length);
+        return resultHTMLString;
+      }
+
+      function initTooltips() {
+        const tooltipTriggerList = document.querySelectorAll(
+          '[data-bs-toggle="tooltip"]'
+        );
+        const tooltipList = [...tooltipTriggerList].map(
+          (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
+        );
+      }
       function grammarCheckReq(text, lang = "en-US") {
         return axios
           .get("http://localhost:8010/v2/check", {
@@ -49,11 +121,17 @@
           })
           .catch((error) => {
             console.error(error);
-            alert("Failed to init");
+            alert("Error: " + error.message);
           });
       }
       window.addEventListener("load", async (event) => {
+        grammarTestInputEle = document.getElementById("grammarTestInput");
+        grammarResultEle = document.getElementById("grammarResult");
+        templateTooltipEle = document.getElementById("templateTooltip");
+
+        grammarTestInputEle.addEventListener("keyup", textInputOnChange);
         await grammarCheckReq("Plz, fix my poor grammer");
+        initTooltips();
       });
     </script>
   </body>
