@@ -43,7 +43,7 @@
             data-bs-html="true"
             id="templateTooltip"
           ></span>
-          <p class="muted text-start" id="grammarResult">...</p>
+          <pre class="muted text-start" id="grammarResult">...</pre>
         </div>
       </div>
     </div>
@@ -115,8 +115,7 @@
             match.replacements.length > 0
               ? match.replacements[0].value
               : failText;
-          resultHTMLString += `${normalText}
-          <button
+          resultHTMLString += `${normalText}<button
             style="color: #e685b5;"
             data-bs-toggle="tooltip"
             data-bs-title="${
@@ -126,8 +125,7 @@
             onclick="onReplaceBtnClicked('${window.btoa(text)}', ${
             match.offset
           }, ${match.length}, '${window.btoa(possibleReplacements)}')"
-          >${failText}</button>
-          `;
+          >${failText}</button>`;
           lastStrPtr = match.offset + match.length;
         });
         if (lastStrPtr < text.length)
