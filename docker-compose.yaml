@@ -14,6 +14,7 @@ services:
 
   ##### Protected section
 
+  # https://github.com/meyayl/docker-languagetool
   languagetool:
     image: meyay/languagetool:6.3-1
     container_name: grammar_checker_languagetool_container
