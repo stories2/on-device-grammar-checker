@@ -11,6 +11,7 @@ const createWindow = () => {
   win.loadFile("index.html");
   win.webContents.openDevTools();
   win.setAlwaysOnTop(true);
+  win.setResizable(false);
 };
 
 app.whenReady().then(() => {
