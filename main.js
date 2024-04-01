@@ -10,8 +10,9 @@ const createWindow = () => {
 
   win.loadFile("index.html");
   win.webContents.openDevTools();
-  win.setAlwaysOnTop(true);
+  win.setAlwaysOnTop(true, "screen-saver");
   win.setResizable(false);
+  win.setVisibleOnAllWorkspaces(true);
 };
 
 app.whenReady().then(() => {
