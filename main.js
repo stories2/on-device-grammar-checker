@@ -3,8 +3,8 @@ const path = require("node:path");
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 400,
-    height: 600,
+    width: 300,
+    height: 500,
     icon: path.join(__dirname, "images/icon@1x.png"),
   });
 
@@ -12,7 +12,9 @@ const createWindow = () => {
   win.webContents.openDevTools();
   win.setAlwaysOnTop(true, "screen-saver");
   win.setResizable(false);
-  win.setVisibleOnAllWorkspaces(true);
+  win.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: true
+  });
 };
 
 app.whenReady().then(() => {
